@@ -1,0 +1,739 @@
+
+
+Index · HTML
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Account Expense Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+ 
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --text-dark: #1f2937;
+            --text-gray: #6b7280;
+            --bg-light: #f3f4f6;
+            --card-bg: #ffffff;
+            --border-radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --transition: all 0.3s ease;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        header {
+            background-color: var(--card-bg);
+            padding: 1rem 2rem;
+            box-shadow: var(--shadow);
+            position: sticky; top: 0; z-index: 100;
+        }
+        .header-content {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo {
+            font-size: 1.5rem; font-weight: 700; color: var(--primary-color);
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .user-profile { display: flex; align-items: center; gap: 1rem; font-size: 0.9rem; color: var(--text-gray); }
+        .user-profile .btn-secondary { padding: 0.4rem 0.9rem; font-size: 0.85rem; }
+ 
+        main {
+            flex: 1; max-width: 1200px; margin: 2rem auto; width: 100%;
+            padding: 0 1rem; display: grid; grid-template-columns: 300px 1fr; gap: 2rem;
+        }
+        @media (max-width: 768px) { main { grid-template-columns: 1fr; } }
+ 
+        .sidebar { display: flex; flex-direction: column; gap: 1.5rem; }
+        .card { background: var(--card-bg); border-radius: var(--border-radius); box-shadow: var(--shadow); padding: 1.5rem; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .card-title { font-size: 1.1rem; font-weight: 600; color: var(--text-dark); }
+        .btn-icon { background: none; border: none; cursor: pointer; color: var(--text-gray); font-size: 1rem; transition: var(--transition); }
+        .btn-icon:hover { color: var(--primary-color); }
+ 
+        .account-list { list-style: none; display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 0.75rem; }
+        .account-item {
+            padding: 0.75rem; border-radius: 8px; border: 1px solid #e5e7eb; cursor: pointer;
+            transition: var(--transition); display: flex; justify-content: space-between; align-items: center;
+        }
+        .account-item:hover { border-color: var(--primary-color); background-color: #f9fafb; }
+        .account-item.active { border-color: var(--primary-color); background-color: #eef2ff; color: var(--primary-color); }
+        .account-info h4 { font-size: 0.95rem; font-weight: 600; }
+        .account-info span { font-size: 0.8rem; color: var(--text-gray); }
+        .account-balance { font-weight: 700; font-size: 0.95rem; }
+        .delete-account-btn { opacity: 0; background: none; border: none; color: var(--danger-color); cursor: pointer; margin-left: 10px; transition: opacity 0.2s; }
+        .account-item:hover .delete-account-btn { opacity: 1; }
+        .add-account-btn {
+            width: 100%; padding: 0.75rem; background-color: transparent; border: 2px dashed #d1d5db;
+            border-radius: 8px; color: var(--text-gray); cursor: pointer; font-weight: 500; transition: var(--transition);
+        }
+        .add-account-btn:hover { border-color: var(--primary-color); color: var(--primary-color); }
+ 
+        .dashboard { display: flex; flex-direction: column; gap: 1.5rem; }
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+        .summary-card { padding: 1.25rem; background: white; border-radius: var(--border-radius); box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 0.5rem; }
+        .summary-label { font-size: 0.85rem; color: var(--text-gray); font-weight: 500; }
+        .summary-value { font-size: 1.5rem; font-weight: 700; }
+        .text-success { color: var(--success-color); }
+        .text-danger { color: var(--danger-color); }
+ 
+        .transaction-form { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 1rem; align-items: end; }
+        @media (max-width: 1000px) { .transaction-form { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 600px) { .transaction-form { grid-template-columns: 1fr; } }
+        .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
+        label { font-size: 0.85rem; font-weight: 500; color: var(--text-gray); }
+        input, select { padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 8px; font-family: inherit; font-size: 0.95rem; transition: var(--transition); }
+        input:focus, select:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+        .btn-primary { background-color: var(--primary-color); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: var(--transition); height: 42px; }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+ 
+        .transaction-type-toggle { display: flex; background: #e5e7eb; padding: 4px; border-radius: 8px; margin-bottom: 1rem; width: fit-content; }
+        .type-btn { padding: 6px 16px; border: none; background: transparent; cursor: pointer; border-radius: 6px; font-weight: 500; font-size: 0.9rem; transition: var(--transition); }
+        .type-btn.active.inc { background: white; color: var(--success-color); box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .type-btn.active.exp { background: white; color: var(--danger-color); box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+ 
+        .transaction-list { list-style: none; display: flex; flex-direction: column; gap: 0.75rem; max-height: 500px; overflow-y: auto; padding-right: 5px; }
+        .transaction-item { display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: #fff; border: 1px solid #f3f4f6; border-radius: 8px; transition: var(--transition); }
+        .transaction-item:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+        .t-left { display: flex; align-items: center; gap: 1rem; }
+        .t-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
+        .t-icon.income { background-color: #d1fae5; color: var(--success-color); }
+        .t-icon.expense { background-color: #fee2e2; color: var(--danger-color); }
+        .t-details h4 { font-size: 1rem; font-weight: 600; }
+        .t-details span { font-size: 0.8rem; color: var(--text-gray); }
+        .t-right { text-align: right; display: flex; align-items: center; gap: 1rem; }
+        .t-amount { font-weight: 700; font-size: 1rem; }
+        .t-delete { color: var(--text-gray); background: none; border: none; cursor: pointer; transition: var(--transition); }
+        .t-delete:hover { color: var(--danger-color); }
+        .empty-state { text-align: center; padding: 2rem; color: var(--text-gray); }
+ 
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; }
+        .modal.open { display: flex; }
+        .modal-content { background: white; padding: 2rem; border-radius: var(--border-radius); width: 100%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-title { margin-bottom: 1.5rem; font-size: 1.25rem; color: var(--text-dark); }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem; }
+        .btn-secondary { background: #e5e7eb; color: var(--text-dark); border: none; padding: 0.6rem 1.2rem; border-radius: 6px; cursor: pointer; font-weight: 500; }
+ 
+        .toast { position: fixed; bottom: 20px; right: 20px; background: var(--text-dark); color: white; padding: 12px 24px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); transform: translateY(100px); opacity: 0; transition: all 0.3s ease; z-index: 2000; }
+        .toast.show { transform: translateY(0); opacity: 1; }
+ 
+        /* Auth screen */
+        #authScreen { position: fixed; inset: 0; background: var(--bg-light); z-index: 1500; display: none; align-items: center; justify-content: center; padding: 1rem; }
+        #authScreen.open { display: flex; }
+        .auth-card { background: white; border-radius: var(--border-radius); box-shadow: var(--shadow); padding: 2rem; width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 1rem; }
+        .auth-card .logo { justify-content: center; margin-bottom: 0.5rem; }
+        .auth-error { color: var(--danger-color); font-size: 0.85rem; min-height: 1.2em; }
+        .btn-google { background: white; border: 1px solid #d1d5db; border-radius: 8px; padding: 0.75rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-family: inherit; }
+        .btn-google:hover { background: #f9fafb; }
+        .auth-switch { text-align: center; font-size: 0.85rem; color: var(--text-gray); }
+        .auth-switch a { color: var(--primary-color); cursor: pointer; font-weight: 500; }
+        .divider { text-align: center; color: var(--text-gray); font-size: 0.8rem; }
+        #loading { position: fixed; inset: 0; background: var(--bg-light); z-index: 1600; display: flex; align-items: center; justify-content: center; color: var(--primary-color); font-size: 2rem; }
+        #loading.hidden { display: none; }
+        #appRoot { display: none; flex-direction: column; flex: 1; }
+        #appRoot.open { display: flex; }
+        #configWarning { background: #fef3c7; color: #92400e; padding: 0.75rem 1rem; text-align: center; font-size: 0.9rem; display: none; }
+    </style>
+</head>
+<body>
+ 
+    <div id="loading"><i class="fa-solid fa-spinner fa-spin"></i></div>
+    <div id="configWarning">Firebase isn't configured yet — paste your project's config into <code>firebaseConfig</code> in this file.</div>
+ 
+    <!-- Auth Screen -->
+    <div id="authScreen">
+        <div class="auth-card">
+            <div class="logo"><i class="fa-solid fa-wallet"></i> PennyWise</div>
+            <h3 id="authTitle" style="text-align:center;">Sign in</h3>
+            <form id="authForm" style="display:flex; flex-direction:column; gap:1rem;" onsubmit="handleEmailAuth(event)">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="authEmail" required autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="authPassword" required minlength="6" autocomplete="current-password">
+                </div>
+                <div class="auth-error" id="authError"></div>
+                <button type="submit" class="btn-primary" id="authSubmitBtn">Sign in</button>
+            </form>
+            <div class="divider">or</div>
+            <button class="btn-google" onclick="handleGoogleAuth()"><i class="fa-brands fa-google"></i> Continue with Google</button>
+            <div class="auth-switch">
+                <span id="authSwitchText">New here?</span>
+                <a id="authSwitchLink" onclick="toggleAuthMode()">Create an account</a>
+            </div>
+        </div>
+    </div>
+ 
+    <div id="appRoot">
+        <header>
+            <div class="header-content">
+                <div class="logo"><i class="fa-solid fa-wallet"></i> PennyWise</div>
+                <div class="user-profile">
+                    <span id="userEmail"></span>
+                    <button class="btn-secondary" onclick="handleSignOut()">Sign out</button>
+                </div>
+            </div>
+        </header>
+ 
+        <main>
+            <aside class="sidebar">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">My Accounts</h3>
+                        <button class="btn-icon" onclick="openModal()" title="Add Account"><i class="fa-solid fa-plus-circle"></i></button>
+                    </div>
+                    <ul class="account-list" id="accountList"></ul>
+                    <button class="add-account-btn" onclick="openModal()">+ Add New Account</button>
+                </div>
+ 
+                <div class="card">
+                    <div class="card-header"><h3 class="card-title">Quick Stats</h3></div>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+                            <span style="color: var(--text-gray);">Total Transactions</span>
+                            <span id="totalTransCount" style="font-weight: 600;">0</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+                            <span style="color: var(--text-gray);">Savings Rate</span>
+                            <span id="savingsRate" style="font-weight: 600;">0%</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+ 
+            <section class="dashboard">
+                <div class="summary-grid">
+                    <div class="summary-card">
+                        <span class="summary-label">Current Balance</span>
+                        <span class="summary-value" id="currentBalance">$0.00</span>
+                    </div>
+                    <div class="summary-card">
+                        <span class="summary-label">Total Income</span>
+                        <span class="summary-value text-success" id="totalIncome">$0.00</span>
+                    </div>
+                    <div class="summary-card">
+                        <span class="summary-label">Total Expenses</span>
+                        <span class="summary-value text-danger" id="totalExpense">$0.00</span>
+                    </div>
+                </div>
+ 
+                <div class="card">
+                    <div class="card-header"><h3 class="card-title">Add Transaction</h3></div>
+                    <div class="transaction-type-toggle">
+                        <button class="type-btn active exp" id="btnExpense" onclick="setTransactionType('expense')">Expense</button>
+                        <button class="type-btn" id="btnIncome" onclick="setTransactionType('income')">Income</button>
+                    </div>
+                    <form id="transactionForm" class="transaction-form" onsubmit="handleTransactionSubmit(event)">
+                        <div class="form-group">
+                            <label>Description</label>
+                            <input type="text" id="tDescription" placeholder="e.g. Grocery, Salary" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Amount</label>
+                            <input type="number" id="tAmount" placeholder="0.00" step="0.01" min="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Category</label>
+                            <select id="tCategory"></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Date</label>
+                            <input type="date" id="tDate" required>
+                        </div>
+                        <button type="submit" class="btn-primary">Add</button>
+                    </form>
+                </div>
+ 
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Recent History</h3>
+                        <div style="font-size: 0.85rem; color: var(--text-gray);">
+                            <select id="monthFilter" style="padding:0.3rem 0.5rem; font-size:0.85rem; margin-right:0.75rem;">
+                                <option value="">All time</option>
+                            </select>
+                            Account: <strong id="currentAccountName">All</strong>
+                        </div>
+                    </div>
+                    <ul class="transaction-list" id="transactionList">
+                        <li class="empty-state">No transactions yet.</li>
+                    </ul>
+                </div>
+            </section>
+        </main>
+    </div>
+ 
+    <!-- Modal for Adding Account -->
+    <div id="accountModal" class="modal">
+        <div class="modal-content">
+            <h3 class="modal-title">Create New Account</h3>
+            <form id="accountForm" onsubmit="handleAddAccount(event)">
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label>Account Name</label>
+                    <input type="text" id="accName" placeholder="e.g. Main Bank, Wallet" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label>Initial Balance</label>
+                    <input type="number" id="accBalance" placeholder="0.00" step="0.01" value="0">
+                </div>
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label>Account Type (Icon)</label>
+                    <select id="accIcon">
+                        <option value="wallet">Wallet</option>
+                        <option value="credit-card">Credit Card</option>
+                        <option value="building-columns">Bank</option>
+                        <option value="piggy-bank">Savings</option>
+                        <option value="coins">Cash</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Create Account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+ 
+    <div id="toast" class="toast">Action Successful</div>
+ 
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+        import {
+            getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+            signInWithPopup, GoogleAuthProvider, signOut
+        } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+        import {
+            initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
+            collection, doc, onSnapshot, query, orderBy, writeBatch, increment, serverTimestamp
+        } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+ 
+        // =====================================================
+        // 1. PASTE YOUR FIREBASE CONFIG HERE
+        //    Firebase Console → Project settings → Your apps → Web app
+        // =====================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyApG2dJo1f66Cf_ecAh8pdrKn4m2pM-9rc",
+            authDomain: "expence-tracker-8b654.firebaseapp.com",
+            projectId: "expence-tracker-8b654",
+            storageBucket: "expence-tracker-8b654.firebasestorage.app",
+            messagingSenderId: "240046191250",
+            appId: "1:240046191250:web:723c139bdc537fd307ec4b",
+            measurementId: "G-6525NFZ165"
+        };
+ 
+        const configured = firebaseConfig.apiKey !== "YOUR_API_KEY";
+        if (!configured) {
+            document.getElementById('configWarning').style.display = 'block';
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('authScreen').classList.add('open');
+        }
+ 
+        let app, auth, db;
+        if (configured) {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            // Offline cache: works without internet, syncs when back online
+            db = initializeFirestore(app, {
+                localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+            });
+        }
+ 
+        // --- State ---
+        let state = { accounts: [], transactions: [], activeAccountId: null, transactionType: 'expense' };
+        let uid = null;
+        let unsubAccounts = null, unsubTransactions = null;
+        let accountsLoaded = false;
+        let authMode = 'signin';
+ 
+        const expenseCategories = ['Food', 'Drink', 'Travel', 'Utilities', 'Milk', 'Recharge', 'Petrol', 'Medicine', 'Medical', 'Daily Needs'];
+        const incomeCategories = ['Salary', 'Investment'];
+ 
+        const accountsCol = () => collection(db, 'users', uid, 'accounts');
+        const transactionsCol = () => collection(db, 'users', uid, 'transactions');
+ 
+        // --- Auth ---
+        if (configured) {
+            onAuthStateChanged(auth, (user) => {
+                document.getElementById('loading').classList.add('hidden');
+                if (user) {
+                    uid = user.uid;
+                    document.getElementById('userEmail').textContent = user.email || user.displayName || '';
+                    document.getElementById('authScreen').classList.remove('open');
+                    document.getElementById('appRoot').classList.add('open');
+                    startListeners();
+                } else {
+                    stopListeners();
+                    uid = null;
+                    state.accounts = []; state.transactions = []; state.activeAccountId = null;
+                    document.getElementById('appRoot').classList.remove('open');
+                    document.getElementById('authScreen').classList.add('open');
+                }
+            });
+        }
+ 
+        window.toggleAuthMode = function () {
+            authMode = authMode === 'signin' ? 'signup' : 'signin';
+            const s = authMode === 'signin';
+            document.getElementById('authTitle').textContent = s ? 'Sign in' : 'Create account';
+            document.getElementById('authSubmitBtn').textContent = s ? 'Sign in' : 'Sign up';
+            document.getElementById('authSwitchText').textContent = s ? 'New here?' : 'Already have an account?';
+            document.getElementById('authSwitchLink').textContent = s ? 'Create an account' : 'Sign in';
+            document.getElementById('authPassword').autocomplete = s ? 'current-password' : 'new-password';
+            document.getElementById('authError').textContent = '';
+        };
+ 
+        window.handleEmailAuth = async function (e) {
+            e.preventDefault();
+            if (!configured) return showAuthError('Add your Firebase config first.');
+            const email = document.getElementById('authEmail').value.trim();
+            const password = document.getElementById('authPassword').value;
+            const btn = document.getElementById('authSubmitBtn');
+            btn.disabled = true;
+            try {
+                if (authMode === 'signin') await signInWithEmailAndPassword(auth, email, password);
+                else await createUserWithEmailAndPassword(auth, email, password);
+            } catch (err) {
+                showAuthError(friendlyAuthError(err));
+            } finally {
+                btn.disabled = false;
+            }
+        };
+ 
+        window.handleGoogleAuth = async function () {
+            if (!configured) return showAuthError('Add your Firebase config first.');
+            try {
+                await signInWithPopup(auth, new GoogleAuthProvider());
+            } catch (err) {
+                showAuthError(friendlyAuthError(err));
+            }
+        };
+ 
+        window.handleSignOut = () => signOut(auth);
+ 
+        function showAuthError(msg) { document.getElementById('authError').textContent = msg; }
+ 
+        function friendlyAuthError(err) {
+            const map = {
+                'auth/invalid-credential': 'Wrong email or password.',
+                'auth/user-not-found': 'No account with that email.',
+                'auth/wrong-password': 'Wrong email or password.',
+                'auth/email-already-in-use': 'That email is already registered.',
+                'auth/weak-password': 'Password must be at least 6 characters.',
+                'auth/invalid-email': 'Enter a valid email address.',
+                'auth/popup-closed-by-user': 'Sign-in popup was closed.',
+                'auth/operation-not-allowed': 'This sign-in method is not enabled in Firebase Console.'
+            };
+            return map[err.code] || err.message;
+        }
+ 
+        // --- Firestore listeners ---
+        function startListeners() {
+            stopListeners();
+            accountsLoaded = false;
+ 
+            unsubAccounts = onSnapshot(query(accountsCol(), orderBy('createdAt', 'asc')), async (snap) => {
+                state.accounts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                if (!accountsLoaded) {
+                    accountsLoaded = true;
+                    if (state.accounts.length === 0 && !snap.metadata.fromCache) {
+                        await createAccount('Cash Wallet', 0, 'wallet');
+                        return;
+                    }
+                }
+                if (!state.accounts.find(a => a.id === state.activeAccountId)) {
+                    state.activeAccountId = state.accounts.length ? state.accounts[0].id : null;
+                }
+                renderApp();
+            }, (err) => showToast('Error loading accounts: ' + err.code));
+ 
+            unsubTransactions = onSnapshot(query(transactionsCol(), orderBy('date', 'desc')), (snap) => {
+                state.transactions = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                renderApp();
+            }, (err) => showToast('Error loading transactions: ' + err.code));
+        }
+ 
+        function stopListeners() {
+            if (unsubAccounts) unsubAccounts();
+            if (unsubTransactions) unsubTransactions();
+            unsubAccounts = unsubTransactions = null;
+        }
+ 
+        // --- Core logic ---
+        async function createAccount(name, balance, icon) {
+            const ref = doc(accountsCol());
+            const batch = writeBatch(db);
+            batch.set(ref, {
+                name, icon,
+                balance: parseFloat(balance) || 0,
+                createdAt: serverTimestamp()
+            });
+            await batch.commit();
+            if (!state.activeAccountId) state.activeAccountId = ref.id;
+        }
+ 
+        window.handleAddAccount = async function (e) {
+            e.preventDefault();
+            try {
+                await createAccount(
+                    document.getElementById('accName').value.trim(),
+                    document.getElementById('accBalance').value,
+                    document.getElementById('accIcon').value
+                );
+                closeModal();
+                document.getElementById('accountForm').reset();
+                showToast('Account created successfully');
+            } catch (err) { showToast('Failed: ' + err.code); }
+        };
+ 
+        window.deleteAccount = async function (e, id) {
+            e.stopPropagation();
+            if (!confirm('Are you sure? This will delete all transactions associated with this account.')) return;
+            try {
+                const ops = [doc(db, 'users', uid, 'accounts', id),
+                    ...state.transactions.filter(t => t.accountId === id).map(t => doc(db, 'users', uid, 'transactions', t.id))];
+                // Firestore batches are limited to 500 writes
+                for (let i = 0; i < ops.length; i += 450) {
+                    const batch = writeBatch(db);
+                    ops.slice(i, i + 450).forEach(r => batch.delete(r));
+                    await batch.commit();
+                }
+                showToast('Account deleted');
+            } catch (err) { showToast('Failed: ' + err.code); }
+        };
+ 
+        window.handleTransactionSubmit = async function (e) {
+            e.preventDefault();
+            if (!state.activeAccountId) return showToast('Please create an account first');
+ 
+            const description = document.getElementById('tDescription').value.trim();
+            const amount = parseFloat(document.getElementById('tAmount').value);
+            const category = document.getElementById('tCategory').value;
+            const type = state.transactionType;
+ 
+            try {
+                const batch = writeBatch(db);
+                const tRef = doc(transactionsCol());
+                batch.set(tRef, {
+                    accountId: state.activeAccountId,
+                    description, amount, category, type,
+                    date: txDateIso()
+                });
+                // Atomic balance update, safe with multiple devices
+                batch.update(doc(db, 'users', uid, 'accounts', state.activeAccountId), {
+                    balance: increment(type === 'income' ? amount : -amount)
+                });
+                await batch.commit();
+                document.getElementById('tDescription').value = '';
+                document.getElementById('tAmount').value = '';
+                showToast('Transaction added');
+            } catch (err) { showToast('Failed: ' + err.code); }
+        };
+ 
+        window.deleteTransaction = async function (id) {
+            const t = state.transactions.find(x => x.id === id);
+            if (!t) return;
+            try {
+                const batch = writeBatch(db);
+                batch.delete(doc(db, 'users', uid, 'transactions', id));
+                if (state.accounts.find(a => a.id === t.accountId)) {
+                    batch.update(doc(db, 'users', uid, 'accounts', t.accountId), {
+                        balance: increment(t.type === 'income' ? -t.amount : t.amount)
+                    });
+                }
+                await batch.commit();
+                showToast('Transaction deleted');
+            } catch (err) { showToast('Failed: ' + err.code); }
+        };
+ 
+        window.switchAccount = function (id) { state.activeAccountId = id; renderApp(); };
+ 
+        // --- Rendering ---
+        function esc(s) {
+            return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+ 
+        function renderApp() { populateMonths(); renderAccounts(); renderSummary(); renderTransactions(); }
+ 
+        function renderAccounts() {
+            const list = document.getElementById('accountList');
+            list.innerHTML = '';
+            state.accounts.forEach(acc => {
+                const active = state.activeAccountId === acc.id;
+                const li = document.createElement('li');
+                li.className = `account-item ${active ? 'active' : ''}`;
+                li.onclick = () => window.switchAccount(acc.id);
+                li.innerHTML = `
+                    <div style="display:flex; align-items:center;">
+                        <div style="margin-right: 10px; color: ${active ? 'var(--primary-color)' : '#9ca3af'}">
+                            <i class="fa-solid fa-${esc(acc.icon)}"></i>
+                        </div>
+                        <div class="account-info">
+                            <h4>${esc(acc.name)}</h4>
+                            <span>Account</span>
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:center;">
+                        <div class="account-balance">${formatCurrency(acc.balance)}</div>
+                        <button class="delete-account-btn" title="Delete Account"><i class="fa-solid fa-trash"></i></button>
+                    </div>`;
+                li.querySelector('.delete-account-btn').onclick = (e) => window.deleteAccount(e, acc.id);
+                list.appendChild(li);
+            });
+        }
+ 
+        function renderSummary() {
+            const rel = state.transactions.filter(t => t.accountId === state.activeAccountId && inSelectedMonth(t));
+            let income = 0, expense = 0;
+            rel.forEach(t => { if (t.type === 'income') income += t.amount; else expense += t.amount; });
+ 
+            const account = state.accounts.find(a => a.id === state.activeAccountId);
+            document.getElementById('currentBalance').textContent = formatCurrency(account ? account.balance : 0);
+            document.getElementById('totalIncome').textContent = '+' + formatCurrency(income);
+            document.getElementById('totalExpense').textContent = '-' + formatCurrency(expense);
+ 
+            document.getElementById('totalTransCount').textContent = state.transactions.length;
+            const gi = state.transactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+            const ge = state.transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+            const rate = gi > 0 ? ((gi - ge) / gi * 100).toFixed(1) : 0;
+            document.getElementById('savingsRate').textContent = rate + '%';
+            document.getElementById('currentAccountName').textContent = account ? account.name : 'None';
+        }
+ 
+        const categoryIcons = {
+            'Food': 'utensils', 'Drink': 'martini-glass', 'Travel': 'plane', 'Utilities': 'bolt', 'Milk': 'bottle-water',
+            'Recharge': 'mobile-screen', 'Petrol': 'gas-pump', 'Medicine': 'pills', 'Medical': 'notes-medical',
+            'Daily Needs': 'basket-shopping', 'Salary': 'money-bill-wave', 'Investment': 'chart-line'
+        };
+ 
+        function renderTransactions() {
+            const list = document.getElementById('transactionList');
+            list.innerHTML = '';
+            const filtered = state.transactions.filter(t => t.accountId === state.activeAccountId && inSelectedMonth(t));
+            if (filtered.length === 0) {
+                list.innerHTML = '<li class="empty-state">No transactions for this account yet.</li>';
+                return;
+            }
+            filtered.forEach(t => {
+                const li = document.createElement('li');
+                li.className = 'transaction-item';
+                const isInc = t.type === 'income';
+                const date = new Date(t.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+                const icon = categoryIcons[t.category] || 'tag';
+                li.innerHTML = `
+                    <div class="t-left">
+                        <div class="t-icon ${isInc ? 'income' : 'expense'}"><i class="fa-solid fa-${icon}"></i></div>
+                        <div class="t-details">
+                            <h4>${esc(t.description)}</h4>
+                            <span>${esc(t.category)} • ${date}</span>
+                        </div>
+                    </div>
+                    <div class="t-right">
+                        <div class="t-amount ${isInc ? 'text-success' : 'text-danger'}">${isInc ? '+' : '-'}${formatCurrency(t.amount)}</div>
+                        <button class="t-delete" title="Delete"><i class="fa-solid fa-times"></i></button>
+                    </div>`;
+                li.querySelector('.t-delete').onclick = () => window.deleteTransaction(t.id);
+                list.appendChild(li);
+            });
+        }
+ 
+        // --- Helpers ---
+        window.setTransactionType = function (type) {
+            state.transactionType = type;
+            const btnExp = document.getElementById('btnExpense');
+            const btnInc = document.getElementById('btnIncome');
+            if (type === 'expense') {
+                btnExp.classList.add('active', 'exp'); btnInc.classList.remove('active', 'inc');
+            } else {
+                btnInc.classList.add('active', 'inc'); btnExp.classList.remove('active', 'exp');
+            }
+            updateCategoryOptions();
+        };
+ 
+        function updateCategoryOptions() {
+            const select = document.getElementById('tCategory');
+            select.innerHTML = '';
+            (state.transactionType === 'expense' ? expenseCategories : incomeCategories).forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c; opt.textContent = c;
+                select.appendChild(opt);
+            });
+        }
+ 
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0);
+        }
+ 
+        window.openModal = () => document.getElementById('accountModal').classList.add('open');
+        window.closeModal = () => document.getElementById('accountModal').classList.remove('open');
+ 
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+ 
+        window.addEventListener('click', (event) => {
+            if (event.target === document.getElementById('accountModal')) window.closeModal();
+        });
+ 
+        // --- Dates & month filter ---
+        const todayStr = () => new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD in local time
+ 
+        // Date for a new transaction: today keeps the current time (for ordering),
+        // other days are stored at noon local time so timezones can't shift the day.
+        function txDateIso() {
+            const v = document.getElementById('tDate').value || todayStr();
+            return v === todayStr() ? new Date().toISOString() : new Date(v + 'T12:00:00').toISOString();
+        }
+ 
+        const monthKey = (iso) => {
+            const d = new Date(iso);
+            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+        };
+ 
+        function inSelectedMonth(t) {
+            const sel = document.getElementById('monthFilter').value;
+            return !sel || monthKey(t.date) === sel;
+        }
+ 
+        function populateMonths() {
+            const select = document.getElementById('monthFilter');
+            const current = select.value;
+            const keys = new Set(state.transactions.map(t => monthKey(t.date)));
+            keys.add(monthKey(new Date().toISOString()));
+            const sorted = [...keys].sort().reverse();
+            select.innerHTML = '<option value="">All time</option>' + sorted.map(k => {
+                const [y, m] = k.split('-');
+                const label = new Date(+y, +m - 1, 1).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+                return `<option value="${k}">${label}</option>`;
+            }).join('');
+            select.value = sorted.includes(current) ? current : '';
+        }
+ 
+        document.getElementById('tDate').value = todayStr();
+        document.getElementById('tDate').max = todayStr();
+        document.getElementById('monthFilter').addEventListener('change', renderApp);
+ 
+        updateCategoryOptions();
+    </script>
+</body>
+</html>
+ 
+Claude finished the response
